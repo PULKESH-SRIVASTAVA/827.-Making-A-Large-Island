@@ -1,0 +1,51 @@
+class Solution {
+    private int[][] directions={{1,0},{-1,0},{0,1},{0,-1}};// for the traversal in left,right,up,down directions
+    public int largestIsland(int[][] grid) {
+        if(grid==null || grid.length==0)//base condition
+            return 0;
+        int max=0;
+        int uniqueno=2;//to keep a count of unique number of islands. Can take any value. Just change every time we encounter new set of islands.
+        Map<Integer,Integer> map=new HashMap();//hashmap to store size of each island 
+        for(int i=0;i<grid.length;i++){
+            for(int j=0;j<grid[0].length;j++){
+                if(grid[i][j]==1){// if there is an island
+                    int sizeofisland=getislandsize(grid,i,j,uniqueno);//search for its size in all directions
+                    max=Math.max(max,sizeofisland);//keep a maximum to store the current maximum size we have
+                    map.put(uniqueno++,sizeofisland);// store all the unique set of island with their size. Increase uniqueno so as to represent other island with other number.
+                }
+            }
+        }
+		//traverse again and check for 0. If we have 0 then check for all the adjacent elements which are not 0.That can make the large island. Add them to set.
+        for(int i=0;i<grid.length;i++){
+            for(int j=0;j<grid[0].length;j++){
+                if(grid[i][j]==0){
+                    Set<Integer> st=new HashSet();
+                    for(int dir[]:directions){// used to traverse in all directions
+                        int x=dir[0]+i;//checking the elements adjacent to the current index 
+                        int y=dir[1]+j;
+                        if(x>-1 && y>-1 && x<grid.length && y<grid[0].length && grid[x][y]!=0)//if they are not out of boundary and also not 0 then we have to add them to set as that can be a large island
+                            st.add(grid[x][y]);
+                    }
+                    int sum=1;//this is 1 because at the current location we have 0 and we want to change it to 1. So add it to the sum
+                    for(int p:st){//all distinct values in set
+                        sum+=map.get(p);//get the size of the island and add it to sum.(as map stores the uniqueid i.e all the different islands and their size)
+                    }
+                    max=Math.max(max,sum);//check for the size of the largest island that can be formed
+                }
+            }
+        }
+        return max;//return ans
+    }
+	
+// function to get the size of the island
+    private int getislandsize(int[][] grid,int i,int j,int uniqueno){
+        if(i<0 || j<0 || i>=grid.length || j>=grid.length || grid[i][j]!=1)//check for boundary condition 
+		return 0;
+        grid[i][j]=uniqueno;//all the indexes that are 1 or connected to 1 change it to some uniqueno so that it can be recognized as a different island
+        int left=getislandsize(grid,i,j-1,uniqueno);//left check
+        int right=getislandsize(grid,i,j+1,uniqueno);//right check
+        int up=getislandsize(grid,i-1,j,uniqueno);//up
+        int down=getislandsize(grid,i+1,j,uniqueno);//down
+        return left+right+up+down+1;//return total size of 1 island
+    }
+}
